@@ -82,6 +82,11 @@ main{padding:0 18px}
 .cat div{display:flex;justify-content:space-between;font-size:14px;gap:8px}
 .cat p{height:10px;border-radius:5px;background:var(--line);margin:5px 0 0;overflow:hidden}
 .cat p i{display:block;height:100%;border-radius:5px;background:var(--lila)}
+.catd summary{list-style:none;cursor:pointer}.catd summary::-webkit-details-marker{display:none}
+.catd[open] summary span:first-child{font-weight:700}
+.catit{margin:4px 0 12px;padding:6px 0 6px 12px;border-left:3px solid var(--line)}
+.catit div{display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:5px 0}
+.catit small{display:block;color:var(--soft);font-size:11.5px}
 .view{display:none}.view.on{display:block}
 .title{font-size:26px;font-weight:800;padding:18px 0 4px;letter-spacing:-.5px}
 .sub{color:var(--soft);font-size:14px;margin:0 0 6px}
@@ -174,7 +179,7 @@ details.mcard summary small{grid-column:1/-1;color:var(--soft);font-size:12px}
     <div class="stats">
       <div class="stat"><small>Fijos</small><b id="sF">—</b></div>
       <div class="stat"><small>Variables</small><b id="sVar">—</b></div>
-      <div class="stat"><small>Tarjetas</small><b id="sT">—</b></div>
+      <div class="stat"><small>Con tarjeta</small><b id="sT">—</b></div>
     </div>
     <div class="fx" id="fx"></div>
     <div class="status" id="status"></div>
@@ -185,7 +190,7 @@ details.mcard summary small{grid-column:1/-1;color:var(--soft);font-size:12px}
     <button class="act" data-open="venta"><i style="background:var(--pist2)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 3v18M16.5 7.5c0-1.7-2-3-4.5-3s-4.5 1.3-4.5 3S9 10.2 12 11s4.5 1.8 4.5 3.7-2 3.3-4.5 3.3-4.5-1.4-4.5-3"/></svg></i>Vendí USD</button>
   </div>
   <main>
-    <div class="card"><h2>En qué gastaste <a data-go="flujos">Presupuesto</a></h2><div id="cats"></div><p class="note">Tarjetas = lo que pagaste de los resúmenes; mandame el resumen y lo abro por categoría.</p></div>
+    <div class="card"><h2>En qué gastaste <a data-go="flujos">Presupuesto</a></h2><div id="cats"></div><p class="note" id="catNote">Tocá una categoría para ver el detalle. Las compras con tarjeta cuentan el mes en que las hiciste (las cuotas, el mes del resumen).</p></div>
   </main>
 </section>
 
@@ -267,11 +272,11 @@ details.mcard summary small{grid-column:1/-1;color:var(--soft);font-size:12px}
 
 <script>
 {
-const CATS=["Súper","Comida y salidas","Delivery","Transporte","Casa","Salud","Ropa","Regalos","Cursos","Otros","Pago tarjeta Santander","Pago tarjeta MP","Cuota depto","Expensas","Fijo","Inversión"];
+const CATS=["Súper","Comida y salidas","Delivery","Transporte","Casa","Salud","Ropa","Regalos","Hobbies","Cursos","Otros","Pago tarjeta Santander","Pago tarjeta MP","Cuota depto","Expensas","Fijo","Inversión"];
 const MEDIOS=["Mercado Pago","Transferencia","Efectivo","Débito","Tarjeta Santander","Tarjeta MP"];
 const VARCATS=["Súper","Comida y salidas","Delivery","Transporte","Casa","Salud","Ropa","Regalos","Cursos","Otros"];
 const isCard=x=>String(x.medio||"").startsWith("Tarjeta");const isPay=x=>String(x.cat||"").startsWith("Pago tarjeta");
-const COL={"Pago tarjeta Santander":["#ffe3e6","#a3243a"],"Pago tarjeta MP":["#cfe8ff","#1f5c8f"],"Cuota depto":["#e4ddff","#5a3fc0"],"Expensas":["#e9ecef","#3d4a55"],"Súper":["#d4f0cc","#2f6e2a"],"Comida y salidas":["#fff0c2","#7a5a00"],"Delivery":["#ffe2cc","#8f4a12"],"Transporte":["#d9f0ff","#155e8a"],"Cursos":["#f4e0f6","#7f2f86"],"Casa":["#e8f2d6","#4f6114"],"Salud":["#ffe0e6","#a3243f"],"Regalos":["#fde4f1","#a3246c"],"Otros":["#eceeed","#4a5550"],"Ropa":["#e4ddff","#5a3fc0"],"Fijo":["#e9ecef","#3d4a55"],"Inversión":["#d4f0cc","#2f6e2a"]};
+const COL={"Pago tarjeta Santander":["#ffe3e6","#a3243a"],"Pago tarjeta MP":["#cfe8ff","#1f5c8f"],"Cuota depto":["#e4ddff","#5a3fc0"],"Expensas":["#e9ecef","#3d4a55"],"Súper":["#d4f0cc","#2f6e2a"],"Comida y salidas":["#fff0c2","#7a5a00"],"Delivery":["#ffe2cc","#8f4a12"],"Transporte":["#d9f0ff","#155e8a"],"Cursos":["#f4e0f6","#7f2f86"],"Casa":["#e8f2d6","#4f6114"],"Salud":["#ffe0e6","#a3243f"],"Regalos":["#fde4f1","#a3246c"],"Otros":["#eceeed","#4a5550"],"Ropa":["#e4ddff","#5a3fc0"],"Fijo":["#e9ecef","#3d4a55"],"Inversión":["#d4f0cc","#2f6e2a"],"Hobbies":["#ffe9d6","#8f4a12"],"Impuestos tarjeta":["#eceeed","#4a5550"]};
 const I={cup:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0Z"/><path d="M12 13v4M8 20h8M16 6h3a3 3 0 0 1-3 4M8 6H5a3 3 0 0 0 3 4"/></svg>',chk:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',up:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17l6-6 4 4 6-7"/><path d="M15 8h5v5"/></svg>',cal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M8 3v4M16 3v4M4 10h16M9 15l2 2 4-4"/></svg>',shield:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 6v6c0 4 3 7 7 9 4-2 7-5 7-9V6Z"/><path d="m9 12 2 2 4-4"/></svg>',bag:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l-1.2 11a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8Z"/><path d="M9 8a3 3 0 0 1 6 0M9 14h6"/></svg>',hand:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M9.5 10.2c0-1 1.1-1.7 2.5-1.7s2.5.7 2.5 1.7-1.1 1.4-2.5 1.8-2.5.8-2.5 1.8 1.1 1.7 2.5 1.7 2.5-.7 2.5-1.7"/></svg>',sprout:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 20v-8M12 14c-4 0-6-2.5-6-6 4 0 6 2 6 6Zm0-2c0-4 2.5-6 6.5-6 0 4-2.5 6-6.5 6Z"/></svg>'};
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -304,7 +309,21 @@ function stats(m){
 }
 function otrosIng(){return (plan?.otrosIngresos||[]).reduce((s,o)=>s+num(o.ars),0)}
 const FIJ=["Fijo","Expensas"];const INVC=["Cuota depto","Inversión"];const isInv=x=>INVC.includes(x.cat);
-function gastoMes(m){const r={tot:0,fij:0,var:0,tar:0,inv:0,cat:{}};movs.filter(x=>x.tipo==="gasto"&&String(x.fecha||"").startsWith(m)&&!isCard(x)).forEach(x=>{const v=x.moneda==="USD"?num(x.monto)*TC():num(x.monto);if(isInv(x)){r.inv+=v;return}r.tot+=v;const c=isPay(x)?"Tarjetas (resúmenes)":FIJ.includes(x.cat)?(x.cat==="Fijo"?(String(x.nota||"Fijo").split(" (")[0]):x.cat):x.cat;if(isPay(x))r.tar+=v;else if(FIJ.includes(x.cat))r.fij+=v;else r.var+=v;r.cat[c]=(r.cat[c]||0)+v});return r}
+const PAYCARD={"Pago tarjeta Santander":"Tarjeta Santander","Pago tarjeta MP":"Tarjeta MP"};
+function gastoMes(m){const r={tot:0,fij:0,var:0,tar:0,inv:0,reint:0,dev:0,cat:{},items:{}};
+  const inM=x=>String(x.fecha||"").startsWith(m),ms=movs.filter(inM);
+  const itemized=new Set(ms.filter(x=>x.tipo==="gasto"&&isCard(x)).map(x=>x.medio));
+  ms.filter(x=>x.tipo==="gasto").forEach(x=>{const v=x.moneda==="USD"?num(x.monto)*TC():num(x.monto);
+    if(isInv(x)){r.inv+=v;return}
+    if(x.reint){r.reint+=v;return}
+    if(isPay(x)&&itemized.has(PAYCARD[x.cat]))return;
+    r.tot+=v;
+    const c=isPay(x)?"Tarjeta MP (resumen sin detalle)":x.cat==="Fijo"?"Fijos":FIJ.includes(x.cat)?x.cat==="Expensas"?"Fijos":x.cat:(x.cat||"Otros");
+    if(isPay(x)||isCard(x))r.tar+=v;
+    if(isPay(x));else if(FIJ.includes(x.cat))r.fij+=v;else r.var+=v;
+    r.cat[c]=(r.cat[c]||0)+v;(r.items[c]=r.items[c]||[]).push({...x,v})});
+  ms.filter(x=>x.tipo==="deuda").forEach(x=>{r.dev+=num(x.monto)});
+  r.tot-=r.dev;return r}
 function months(){const s=new Set(movs.map(x=>String(x.fecha||"").slice(0,7)).filter(Boolean));return [...s].sort()}
 
 /* ---------- almacenamiento local (en el celular) ---------- */
@@ -370,22 +389,22 @@ function flows(){
   if(!plan)return [];const tc=TC(),start=addM(today().slice(0,7),1),ro=roPays(),res=[];
   for(let i=0;i<12;i++){const m=addM(start,i),mm=m.slice(5),inc=[],out=[];
     inc.push({n:"Sueldo",ars:num(cfg.sueldoARS)});
-    if(plan.aguinaldo&&(mm==="12"||mm==="06"))inc.push({n:"Aguinaldo (estimado)",ars:num(cfg.sueldoARS)/2});
+    if(plan.aguinaldo&&(mm==="12"||mm==="06")){const y=+m.slice(0,4),s0=new Date(y,mm==="06"?0:6,1),e=new Date(y,mm==="06"?5:11,31),ini=new Date((plan.ingresoDesde||"2000-01-01")+"T00:00"),d0=ini>s0?ini:s0,D=x=>Math.round(x/864e5),dias=Math.max(0,D(e-d0)+1),tot=D(e-s0)+1;if(dias)inc.push({n:"Aguinaldo (estimado)",ars:num(cfg.sueldoARS)/2*dias/tot,est:true,sub:dias<tot?`proporcional: ${dias} de ${tot} días del semestre`:""})}
     inc.push({n:"Ingreso en dólares",ars:num(cfg.ingresoUSD)*tc,u:num(cfg.ingresoUSD)});
     (plan.otrosIngresos||[]).forEach(o=>inc.push({n:o.n,ars:num(o.ars)}));
     invFlows().filter(f=>f.fecha.slice(0,7)===m).forEach(f=>inc.push({n:`${f.t} · ${f.tipo}`,ars:f.usd*tc,u:f.usd,est:f.est}));
     ro.filter(x=>x.m===m).forEach(x=>out.push({n:"Real Option · "+x.label,ars:x.dol?x.usd*tc:x.ars,k:"ro",est:x.est}));
     (plan.cuotas||[]).filter(c=>c.desde<=m&&m<=c.hasta).forEach(c=>{const tot=((+c.hasta.slice(0,4)-+c.desde.slice(0,4))*12+(+c.hasta.slice(5)-+c.desde.slice(5)))+1,k=((+m.slice(0,4)-+c.desde.slice(0,4))*12+(+mm-+c.desde.slice(5)));out.push({n:`${c.n} · ${c.tarjeta}`,sub:`queda${tot-k-1===1?"":"n"} ${tot-k-1} después de esta`,ars:num(c.monto),k:"cu"})});
-    (plan.fijos||[]).forEach(f=>out.push({n:f.n,sub:f.sub||"",ars:f.moneda==="USD"?num(f.monto)*tc:num(f.monto),k:"fi"}));
+    (plan.fijos||[]).filter(f=>!f.reint).forEach(f=>out.push({n:f.n,sub:f.sub||"",ars:f.moneda==="USD"?num(f.monto)*tc:num(f.monto),k:"fi"}));
     const vt=(plan.variables||[]).reduce((s,v)=>s+num(v.monto),0);if(vt)out.push({n:"Gastos variables",sub:"según tu presupuesto",ars:vt,k:"va"});
     const I=inc.reduce((s,x)=>s+x.ars,0),O=out.reduce((s,x)=>s+x.ars,0);res.push({m,inc,out,I,O,L:I-O});}
   return res;
 }
 function renderPres(){
   if(!plan)return;const tc=TC(),cur=today().slice(0,7),m=month;
-  const fij=plan.fijos||[],fT=fij.reduce((s,f)=>s+(f.moneda==="USD"?num(f.monto)*tc:num(f.monto)),0);
+  const fij=plan.fijos||[],fT=fij.filter(f=>!f.reint).reduce((s,f)=>s+(f.moneda==="USD"?num(f.monto)*tc:num(f.monto)),0);
   $("fijTot").textContent=ars(fT);
-  $("fijList").innerHTML=fij.length?fij.map((f,i)=>`<div class="li" data-fij="${i}" role="button" tabindex="0" style="padding-inline:0;cursor:pointer"><div>${esc(f.n)}<small>${esc(f.sub||"")}</small></div><span class="amt">${f.moneda==="USD"?usd(num(f.monto)):ars(num(f.monto))}</span></div>`).join(""):`<p class="empty">Todavía no cargaste gastos fijos.</p>`;
+  $("fijList").innerHTML=fij.length?fij.map((f,i)=>`<div class="li" data-fij="${i}" role="button" tabindex="0" style="padding-inline:0;cursor:pointer"><div>${esc(f.n)}${f.reint?'<span class="tag">lo paga la empresa</span>':""}<small>${esc(f.sub||"")}</small></div><span class="amt"${f.reint?' style="opacity:.45;text-decoration:line-through"':""}>${f.moneda==="USD"?usd(num(f.monto)):ars(num(f.monto))}</span></div>`).join(""):`<p class="empty">Todavía no cargaste gastos fijos.</p>`;
   const vars=plan.variables||[],S=stats(m);
   const spent={};S.gastos.filter(x=>x.moneda!=="USD"&&!isPay(x)).forEach(x=>spent[x.cat]=(spent[x.cat]||0)+num(x.monto));
   const vT=vars.reduce((s,v)=>s+num(v.monto),0),sT=VARCATS.reduce((s,c)=>s+(spent[c]||0),0);
@@ -533,7 +552,7 @@ function render(){
   $("gLbl").textContent="Gastaste en "+new Date(month+"-15").toLocaleDateString("es-AR",{month:"long"});
   $("gTot").textContent=ars(G.tot);
   const pct=inc>0?Math.max(0,Math.min(1,G.tot/inc)):0;$("ring").style.strokeDashoffset=326.7*(1-pct);
-  $("gSub").textContent=G.tot?`${Math.round(G.tot/inc*100)}% de lo que entra`+(P.tot?` · ${G.tot>=P.tot?"+":"−"}${Math.abs(Math.round((G.tot/P.tot-1)*100))}% vs ${monthLabel(addM(month,-1)).split(" ")[0]}`:"")+(G.inv?` · aparte invertiste ${ars(G.inv)}`:""):(G.inv?`Invertiste ${ars(G.inv)} (no cuenta como gasto)`:"Tocá + para anotar");
+  $("gSub").textContent=G.tot?`${Math.round(G.tot/inc*100)}% de lo que entra`+(P.tot?` · ${G.tot>=P.tot?"+":"−"}${Math.abs(Math.round((G.tot/P.tot-1)*100))}% vs ${monthLabel(addM(month,-1)).split(" ")[0]}`:"")+(G.dev?` · ya descontado lo que te devolvieron (${ars(G.dev)})`:"")+(G.inv?` · aparte invertiste ${ars(G.inv)}`:""):(G.inv?`Invertiste ${ars(G.inv)} (no cuenta como gasto)`:"Tocá + para anotar");
   $("sF").textContent=ars(G.fij);$("sVar").textContent=ars(G.var);$("sT").textContent=ars(G.tar);
   const pend=movs.filter(m=>m.tipo==="deuda"&&m.estado!=="cobrado").sort((a,b)=>String(a.fecha).localeCompare(String(b.fecha)));
   const tot=pend.reduce((s,m)=>s+num(m.monto),0);
@@ -541,7 +560,7 @@ function render(){
   $("deudas").innerHTML=pend.length?pend.map(m=>`<div class="mov">${avatar(m)}<div><div class="t">${esc(m.persona)}</div><small>${esc(m.nota||"")}${m.nota?" · ":""}${esc(String(m.fecha).slice(8,10)+"/"+String(m.fecha).slice(5,7))}</small></div><div style="display:flex;gap:8px;align-items:center"><span class="amt">${ars(num(m.monto))}</span><button class="paid" data-paid="${esc(m.id)}">Cobré</button></div></div>`).join(""):`<p class="empty">Nadie te debe nada.</p>`;
   $("recent").innerHTML=ms.length?ms.slice(0,5).map(rowHTML).join(""):`<p class="empty">Todavía no anotaste nada este mes. Tocá + para empezar.</p>`;
   const cs=Object.entries(G.cat).sort((a,b)=>b[1]-a[1]),mx=cs[0]?.[1]||1;
-  $("cats").innerHTML=cs.length?cs.map(([c,v])=>{const b=num(((plan?.variables)||[]).find(x=>x.cat===c)?.monto),pc=b?v/b:0;return `<div class="cat"><div><span>${esc(c)}</span><span><b class="amt" style="color:${b&&pc>1?"#d93a4f":"inherit"}">${ars(v)}</b>${b?`<small style="color:var(--soft)"> de ${ars(b)}</small>`:""}</span></div><p><i style="width:${(b?Math.min(1,pc):v/mx)*100}%;background:${b&&pc>1?"var(--cereza)":b&&pc>.8?"#f5c451":""}"></i></p></div>`}).join(""):`<p class="empty">Sin gastos este mes.</p>`;
+  $("cats").innerHTML=cs.length?cs.map(([c,v])=>{const b=num(((plan?.variables)||[]).find(x=>x.cat===c)?.monto),pc=b?v/b:0,it=(G.items[c]||[]).slice().sort((a,z)=>z.v-a.v);return `<details class="catd"><summary class="cat"><div><span>${esc(c)} <small style="color:var(--soft)">· ${it.length}</small></span><span><b class="amt" style="color:${b&&pc>1?"#d93a4f":"inherit"}">${ars(v)}</b>${b?`<small style="color:var(--soft)"> de ${ars(b)}</small>`:""}</span></div><p><i style="width:${(b?Math.min(1,pc):v/mx)*100}%;background:${b&&pc>1?"var(--cereza)":b&&pc>.8?"#f5c451":""}"></i></p></summary><div class="catit">${it.map(x=>`<div><span>${esc(x.nota||x.cat||"")}<small>${esc(String(x.fecha).slice(8,10)+"/"+String(x.fecha).slice(5,7))} · ${esc(x.medio||"")}</small></span><b class="amt">${x.moneda==="USD"?usd(num(x.monto)):ars(x.v)}</b></div>`).join("")}</div></details>`}).join("")+(G.dev?`<div class="cat"><div><span>Te devolvieron o te deben</span><b class="amt in">−${ars(G.dev)}</b></div></div>`:"")+(G.reint?`<div class="cat"><div><span style="color:var(--soft)">OSDE y monotributo (lo paga la empresa, no suma)</span><b class="amt" style="color:var(--soft)">${ars(G.reint)}</b></div></div>`:""):`<p class="empty">Sin gastos este mes.</p>`;
   const fl=filt==="all"?ms:ms.filter(m=>m.tipo===filt);
   $("all").innerHTML=fl.length?`<div class="card" style="padding-top:4px">${grouped(fl)}</div>`:`<p class="empty">Nada por acá en ${esc(monthLabel(month))}.</p>`;
   $("fx").innerHTML=dolar?`<span>MEP <b>${ars(num(dolar.mep))}</b></span><span>Oficial <b>${ars(num(dolar.oficial))}</b></span><small>${esc(dolar.act||"")}</small>`:"";
