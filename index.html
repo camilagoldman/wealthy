@@ -91,8 +91,8 @@ input:focus,button:focus-visible{outline:2px solid var(--lilad);outline-offset:1
 .bigin{font:800 36px Outfit,sans-serif;text-align:center;border:0;background:transparent;min-height:62px}
 .note{font-size:13px;color:var(--soft);margin:10px 0 0}
 nav{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;padding:0 12px calc(10px + env(safe-area-inset-bottom));pointer-events:none;z-index:10}
-.bar{pointer-events:auto;display:grid;grid-template-columns:1fr 1fr 70px 1fr 1fr;align-items:center;width:100%;max-width:520px;background:var(--card);border-radius:28px;padding:6px;box-shadow:0 10px 30px rgba(38,35,58,.14)}
-.bar button{min-height:48px;border:0;background:none;color:var(--soft);font:700 11px 'DM Sans',sans-serif;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;border-radius:18px}
+.bar{pointer-events:auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr)) 70px repeat(2,minmax(0,1fr));align-items:center;width:100%;max-width:520px;background:var(--card);border-radius:28px;padding:6px;box-shadow:0 10px 30px rgba(38,35,58,.14)}
+.bar button{min-height:48px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:0;background:none;color:var(--soft);font:700 11px 'DM Sans',sans-serif;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;border-radius:18px}
 .bar button svg{width:22px;height:22px}
 .bar button[aria-current=true]{color:var(--lilad)}
 :root[data-theme=dark] .bar button[aria-current=true]{color:var(--lila)}
@@ -250,7 +250,7 @@ details.mcard summary small{grid-column:1/-1;color:var(--soft);font-size:12px}
   <button data-go="home" aria-current="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 10.5 12 4l8 6.5V20h-5v-6H9v6H4Z"/></svg>Inicio</button>
   <button data-go="flujos" aria-current="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 20V10M10 20V4M15 20v-7M20 20v-11"/></svg>Plan</button>
   <button class="plus" data-open="gasto" aria-label="Anotar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
-  <button data-go="movs" aria-current="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg>Movimientos</button>
+  <button data-go="movs" aria-current="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg>Historial</button>
   <button data-go="inv" aria-current="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 20V10l8-6 8 6v10Z"/><path d="M9 20v-6h6v6"/></svg>Inversiones</button>
 </div></nav>
 
