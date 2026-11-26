@@ -239,7 +239,7 @@ details.mcard summary small{grid-column:1/-1;color:var(--soft);font-size:12px}
     <div class="two"><button class="paid" type="button" id="bkExp" style="min-height:44px">Exportar copia</button><label class="paid" style="min-height:44px;display:grid;place-items:center;margin:0;cursor:pointer">Importar copia<input type="file" id="bkImp" accept="application/json,.json" hidden></label></div>
     <p class="note" id="bkInfo"></p>
     <label for="code" style="margin-top:16px">Pegar código de Claude</label>
-    <textarea id="code" rows="3" placeholder="Pegá acá el código que te pasó Claude (empieza con WEALTHY:)" style="width:100%;font:14px 'DM Sans',sans-serif;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:10px 12px;resize:vertical"></textarea>
+    <textarea id="code" rows="3" placeholder="Pegá acá el código que te pasó Claude (empieza con WEALTHY)" style="width:100%;font:14px 'DM Sans',sans-serif;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:10px 12px;resize:vertical"></textarea>
     <button class="save" type="button" id="codeOk" style="margin-top:8px">Cargar código</button></div>
     <p class="note">El sueldo, el reintegro de Real Option y el ingreso en dólares se usan para proyectar los Flujos y para comparar cuánto gastás contra lo que entra.</p>
   </div>
@@ -341,15 +341,17 @@ async function marketUpdate(){
     if(Object.keys(out).length)await LocalDB.doc("inv/precios").set({...out,act:hoy()})}catch(e){}
 }
 $("bkExp").addEventListener("click",()=>{const data={app:"wealthy",v:1,exportado:new Date().toISOString(),docs:LocalDB.dump()};const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(data)],{type:"application/json"}));a.download="wealthy-"+today()+".json";document.body.appendChild(a);a.click();a.remove();try{localStorage.setItem("wealthy-bk",String(Date.now()))}catch(e){}bkInfo()});
-$("bkImp").addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;try{const n=await applyCode(decodeCode(await f.text()));toast("Copia importada: "+n+" datos");bkInfo()}catch(err){toast("Ese archivo no es una copia de Wealthy")}e.target.value=""});
-function decodeCode(t){t=String(t||"").trim();if(t.startsWith("WEALTHY:")){const b=atob(t.slice(8).replace(/\s+/g,""));const u=new Uint8Array([...b].map(c=>c.charCodeAt(0)));t=new TextDecoder().decode(u)}return JSON.parse(t)}
+$("bkImp").addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;try{const n=await applyCode(await decodeCode(await f.text()));toast("Copia importada: "+n+" datos");bkInfo()}catch(err){toast("Ese archivo no es una copia de Wealthy")}e.target.value=""});
+async function decodeCode(t){t=String(t||"").trim();
+  if(t.startsWith("WEALTHYZ:")){const b=atob(t.slice(9).replace(/\s+/g,""));const u=new Uint8Array([...b].map(c=>c.charCodeAt(0)));const st=new Blob([u]).stream().pipeThrough(new DecompressionStream("gzip"));return JSON.parse(await new Response(st).text())}
+  if(t.startsWith("WEALTHY:")){const b=atob(t.slice(8).replace(/\s+/g,""));const u=new Uint8Array([...b].map(c=>c.charCodeAt(0)));t=new TextDecoder().decode(u)}return JSON.parse(t)}
 async function applyCode(d){
   if(!d||d.app!=="wealthy")throw 0;let n=0;
   if(d.docs&&!d.ops){LocalDB.load(d.docs);return Object.keys(d.docs).length}
   for(const o of d.ops||[]){if(!o||typeof o.path!=="string"||!/^[A-Za-z0-9_.~:@+\-]+(\/[A-Za-z0-9_.~:@+\-]+)+$/.test(o.path))continue;const r=LocalDB.doc(o.path);
     if(o.op==="delete")await r.delete();else if(o.op==="merge"){const g=await r.get();if(g.exists)await r.update(o.data||{});else await r.set(o.data||{})}else await r.set(o.data||{});n++}
   return n}
-$("codeOk").addEventListener("click",async()=>{try{const n=await applyCode(decodeCode($("code").value));$("code").value="";toast(`Listo: ${n} cambio${n===1?"":"s"} cargado${n===1?"":"s"}`);bkInfo()}catch(e){toast("Ese código no es válido, copialo completo")}});
+$("codeOk").addEventListener("click",async()=>{try{const n=await applyCode(await decodeCode($("code").value));$("code").value="";toast(`Listo: ${n} cambio${n===1?"":"s"} cargado${n===1?"":"s"}`);bkInfo()}catch(e){toast("Ese código no es válido, copialo completo")}});
 function bkInfo(){let t=0;try{t=+localStorage.getItem("wealthy-bk")||0}catch(e){}$("bkInfo").textContent=`${LocalDB.count()} datos guardados en este celular.`+(t?` Última copia: ${new Date(t).toLocaleDateString("es-AR")}.`:" Todavía no hiciste ninguna copia.")}
 
 /* ---------- plan: flujos e inversiones ---------- */
