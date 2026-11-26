@@ -440,7 +440,7 @@ function renderFlujos(){
 function invFlows(){return inv?(inv.flujos||[]).filter(f=>f.fecha>=today()):[]}
 function posVal(p){const px=precios&&precios[p.t]!=null?num(precios[p.t]):num(p.precio);return p.usd?num(p.usdValor):px*num(p.cant)}
 function roFut(){return roPays().filter(x=>!x.paid).reduce((s,x)=>s+(x.dol?x.usd*TC():x.ars),0)/TC()}
-function roVal(opt){if(!plan||!plan.ro)return 0;const r=plan.ro,m2p=opt?num(r.usdM2):num(r.usdM2Cons||r.usdM2),com=num(r.comision);return num(r.m2)*m2p*num(r.share)*(1-com)-roFut()}
+function roVal(opt){if(!plan||!plan.ro)return 0;const r=plan.ro,m2p=opt?num(r.usdM2):num(r.usdM2Cons||r.usdM2),com=num(r.comision),P=roPays(),tot=P.reduce((s,x)=>s+x.usd,0),f=tot?P.filter(x=>x.paid).reduce((s,x)=>s+x.usd,0)/tot:0;return num(r.m2)*m2p*num(r.share)*f*(1-com)}
 function renderInv(){
   const tc=TC();let h="";
   const COLS={"CEDEARs":"#b6a4ff","ONs":"#a8de9c","Bonos":"#cfe8ff","Acciones":"#ffd59e","Fondos":"#ffb3bd","Liquidez":"#9aa0b5"};
@@ -458,7 +458,7 @@ function renderInv(){
     ${efe?"":`<p class="note">¿Tenés dólares fuera de Balanz (en el banco o en efectivo)? Cargalos en Ajustes para que cuenten acá.</p>`}
     <p class="note"><b>Fondo de emergencia:</b> lo disponible hoy cubre ${(liqHoy*tc/Math.max(1,num(cfg.sueldoARS))).toLocaleString("es-AR",{maximumFractionDigits:1})} meses de tu sueldo; con lo que se vende en 2 días, ${((liqHoy+liq2)*tc/Math.max(1,num(cfg.sueldoARS))).toLocaleString("es-AR",{maximumFractionDigits:1})}.</p></div>`;
   h+=`<div class="pat"><small>Tu patrimonio (caso conservador)</small><span class="fig">${usd0(tot)}</span><small>Balanz y dólares ${usd0(liqHoy+liq2)} · depto ${usd0(dep)} neto · MEP ${ars(tc)}</small>
-    <small style="margin-top:6px">El depto se cuenta al precio de compra (${usd0(num(plan?.ro?.usdM2Cons))}/m²), menos ${Math.round(num(plan?.ro?.comision)*100)}% de gastos de venta y lo que falta pagar. Si sale a ${usd0(num(plan?.ro?.usdM2))}/m², serían ${usd0(tot-dep+depOpt)}.</small>
+    <small style="margin-top:6px">El depto se cuenta a tu precio mínimo de venta (${usd0(num(plan?.ro?.usdM2Cons))}/m²): te toca tu 35% del porcentaje pagado, menos ${Math.round(num(plan?.ro?.comision)*100)}% de comisión. Si sale a ${usd0(num(plan?.ro?.usdM2))}/m², serían ${usd0(tot-dep+depOpt)}.</small>
     <div class="split">${parts.map(([k,v])=>`<i style="width:${v/tot*100}%;background:${COLS[k]||"#ccc"}"></i>`).join("")}</div>
     <div class="lg">${parts.map(([k,v])=>`<span><b style="background:${COLS[k]||"#ccc"}"></b>${esc(k)} ${Math.round(v/tot*100)}%</span>`).join("")}</div></div>`;
   if(inv){
@@ -494,8 +494,8 @@ function roHTML(){
       <div class="box"><small>Pagaste en dólares</small><b>${usd0(usdAnt)}</b></div>
       <div class="box"><small>Falta pagar (estimado)</small><b>${ars(futP)}</b></div>
       <div class="box"><small>Próxima cuota</small><b>${next?ars(next.ars):"—"}</b><small>${next?esc(MES(next.m)):""}</small></div>
-      <div class="box"><small>Si vendés · conservador</small><b>${usd0(roVal(false))}</b><small>${usd0(r.usdM2Cons)}/m² − ${Math.round(num(r.comision)*100)}% gastos − saldo</small></div>
-      <div class="box"><small>Si vendés · optimista</small><b>${usd0(roVal(true))}</b><small>${usd0(r.usdM2)}/m² − ${Math.round(num(r.comision)*100)}% gastos − saldo</small></div>
+      <div class="box"><small>Si vendés · conservador</small><b>${usd0(roVal(false))}</b><small>${usd0(r.usdM2Cons)}/m² × % pagado − ${Math.round(num(r.comision)*100)}% comisión</small></div>
+      <div class="box"><small>Si vendés · optimista</small><b>${usd0(roVal(true))}</b><small>${usd0(r.usdM2)}/m² × % pagado − ${Math.round(num(r.comision)*100)}% comisión</small></div>
       <div class="box" style="grid-column:1/-1"><small>Lo que pusiste hasta hoy (contrato)</small><b>${usd0(basePaid)}</b><small>En el caso conservador ${roVal(false)>=basePaid?"recuperás":"perdés"} ${usd0(Math.abs(roVal(false)-basePaid))} contra lo que pusiste; en el optimista ${roVal(true)>=basePaid?"ganás":"perdés"} ${usd0(Math.abs(roVal(true)-basePaid))}.</small></div>
     </div></div>
     <div class="inv"><h2>Pagos con CAC</h2><p class="sub">Cuotas y refuerzos en pesos: valor en dólares del contrato × ${ars(r.tcBase)} × CAC de ${r.lag} meses antes ÷ CAC base (${esc(MES(r.cacBase))}).</p>
