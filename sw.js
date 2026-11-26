@@ -1,5 +1,5 @@
 // Wealthy: guarda la app en el celular para que abra rápido, con o sin internet.
-const CACHE = "wealthy-v7";
+const CACHE = "wealthy-v9";
 const FILES = ["./", "index.html", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png", "icons/icon-180.png", "icons/icon-32.png", "fonts/outfit-500.woff2", "fonts/outfit-600.woff2", "fonts/outfit-700.woff2", "fonts/outfit-800.woff2", "fonts/dm-sans-400.woff2", "fonts/dm-sans-500.woff2", "fonts/dm-sans-700.woff2"];
 const WAIT = 2500; // si la red tarda más que esto, se abre la copia guardada
 

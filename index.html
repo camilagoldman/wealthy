@@ -190,6 +190,7 @@ details.mcard summary small{grid-column:1/-1;color:var(--soft);font-size:12px}
     <button class="act" data-open="venta"><i style="background:var(--pist2)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 3v18M16.5 7.5c0-1.7-2-3-4.5-3s-4.5 1.3-4.5 3S9 10.2 12 11s4.5 1.8 4.5 3.7-2 3.3-4.5 3.3-4.5-1.4-4.5-3"/></svg></i>Vendí USD</button>
   </div>
   <main>
+    <div class="card" id="mesCard" hidden></div>
     <div class="card"><h2>En qué gastaste <a data-go="flujos">Presupuesto</a></h2><div id="cats"></div><p class="note" id="catNote">Tocá una categoría para ver el detalle. Las compras con tarjeta cuentan el mes en que las hiciste (las cuotas, el mes del resumen).</p></div>
   </main>
 </section>
@@ -553,7 +554,16 @@ function render(){
   $("gLbl").textContent="Gastaste en "+new Date(month+"-15").toLocaleDateString("es-AR",{month:"long"});
   $("gTot").textContent=ars(G.tot);
   const pct=inc>0?Math.max(0,Math.min(1,G.tot/inc)):0;$("ring").style.strokeDashoffset=326.7*(1-pct);
-  $("gSub").textContent=G.tot?`${Math.round(G.tot/inc*100)}% de lo que entra`+(P.tot?` · ${G.tot>=P.tot?"+":"−"}${Math.abs(Math.round((G.tot/P.tot-1)*100))}% vs ${monthLabel(addM(month,-1)).split(" ")[0]}`:"")+(G.dev?` · ya descontado lo que te devolvieron (${ars(G.dev)})`:"")+(G.inv?` · aparte invertiste ${ars(G.inv)}`:""):(G.inv?`Invertiste ${ars(G.inv)} (no cuenta como gasto)`:"Tocá + para anotar");
+  {const pg=Math.round(G.tot/inc*100),pi=Math.round(G.inv/inc*100),q=inc-G.tot-G.inv,pq=100-pg-pi;
+  $("gSub").textContent=G.tot?`${pg}% de lo que entra`+(P.tot?` · ${G.tot>=P.tot?"+":"−"}${Math.abs(Math.round((G.tot/P.tot-1)*100))}% vs ${monthLabel(addM(month,-1)).split(" ")[0]}`:""):"Tocá + para anotar";
+  const W=x=>Math.max(0,x/inc*100),inM=x=>String(x.fecha||"").startsWith(month);
+  const dep=movs.filter(x=>inM(x)&&x.tipo==="gasto"&&x.cat==="Cuota depto").reduce((s,x)=>s+num(x.monto),0),bal=G.inv-dep;
+  const bonos=movs.filter(x=>inM(x)&&x.tipo==="venta"&&!x.mep).reduce((s,x)=>s+num(x.ars),0);
+  const row=(n,sub,a,p,col,b)=>`<div class="li" style="padding-inline:0"><div><i style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${col};margin-right:8px"></i>${n}${sub?`<small style="margin-left:18px">${sub}</small>`:""}</div>${b?`<b class="amt${a>=0?" in":""}">`:`<span class="amt">`}${ars(Math.abs(a))} · ${Math.abs(p)}%${b?"</b>":"</span>"}</div>`;
+  $("mesCard").hidden=!(G.tot||G.inv);
+  $("mesCard").innerHTML=`<h2>Adónde fue la plata</h2><p class="note" style="margin:2px 0 12px">Entraron ${ars(inc)}: sueldo y USD ${num(cfg.ingresoUSD)} al MEP.</p><div style="display:flex;height:14px;border-radius:7px;overflow:hidden;background:var(--line)"><i style="width:${W(G.tot)}%;background:var(--lila)"></i><i style="width:${W(dep)}%;background:#ffb3bd"></i><i style="width:${W(bal)}%;background:#7fc9a0"></i><i style="width:${W(Math.max(0,q))}%;background:var(--pist)"></i></div>`
+  +row("Gastos","",G.tot,pg,"var(--lila)")+(dep?row("Cuota del depto","Real Option",dep,Math.round(dep/inc*100),"#ffb3bd"):"")+(bal?row("Inversiones en Balanz","compras del mes",bal,Math.round(bal/inc*100),"#7fc9a0"):"")
+  +row(q>=0?"Te queda":"Te faltó",q>=0?"sin asignar":bonos?`lo cubriste vendiendo bonos (${ars(bonos)})`:"lo cubriste con ahorros",q,pq,"var(--pist)",1)}
   $("sF").textContent=ars(G.fij);$("sVar").textContent=ars(G.var);$("sT").textContent=ars(G.tar);
   const pend=movs.filter(m=>m.tipo==="deuda"&&m.estado!=="cobrado").sort((a,b)=>String(a.fecha).localeCompare(String(b.fecha)));
   const tot=pend.reduce((s,m)=>s+num(m.monto),0);
