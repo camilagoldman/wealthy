@@ -310,12 +310,13 @@ function stats(m){
 function otrosIng(){return (plan?.otrosIngresos||[]).reduce((s,o)=>s+num(o.ars),0)}
 const FIJ=["Fijo","Expensas"];const INVC=["Cuota depto","Inversión"];const isInv=x=>INVC.includes(x.cat);
 const PAYCARD={"Pago tarjeta Santander":"Tarjeta Santander","Pago tarjeta MP":"Tarjeta MP"};
+function isReint(x){const ns=((plan&&plan.fijos)||[]).filter(f=>f.reint).map(f=>String(f.n).toLowerCase());const t=String(x.nota||"").toLowerCase();return ns.some(n=>n&&t.startsWith(n))}
 function gastoMes(m){const r={tot:0,fij:0,var:0,tar:0,inv:0,reint:0,dev:0,cat:{},items:{}};
   const inM=x=>String(x.fecha||"").startsWith(m),ms=movs.filter(inM);
   const itemized=new Set(ms.filter(x=>x.tipo==="gasto"&&isCard(x)).map(x=>x.medio));
   ms.filter(x=>x.tipo==="gasto").forEach(x=>{const v=x.moneda==="USD"?num(x.monto)*TC():num(x.monto);
     if(isInv(x)){r.inv+=v;return}
-    if(x.reint){r.reint+=v;return}
+    if(x.reint||isReint(x)){r.reint+=v;return}
     if(isPay(x)&&itemized.has(PAYCARD[x.cat]))return;
     r.tot+=v;
     const c=isPay(x)?(x.cat==="Pago tarjeta MP"?"Tarjeta MP":"Tarjeta Santander")+" (resumen sin detalle)":x.cat==="Fijo"?"Fijos":FIJ.includes(x.cat)?x.cat==="Expensas"?"Fijos":x.cat:(x.cat||"Otros");
