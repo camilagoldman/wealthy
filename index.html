@@ -318,7 +318,7 @@ function gastoMes(m){const r={tot:0,fij:0,var:0,tar:0,inv:0,reint:0,dev:0,cat:{}
     if(x.reint){r.reint+=v;return}
     if(isPay(x)&&itemized.has(PAYCARD[x.cat]))return;
     r.tot+=v;
-    const c=isPay(x)?"Tarjeta MP (resumen sin detalle)":x.cat==="Fijo"?"Fijos":FIJ.includes(x.cat)?x.cat==="Expensas"?"Fijos":x.cat:(x.cat||"Otros");
+    const c=isPay(x)?(x.cat==="Pago tarjeta MP"?"Tarjeta MP":"Tarjeta Santander")+" (resumen sin detalle)":x.cat==="Fijo"?"Fijos":FIJ.includes(x.cat)?x.cat==="Expensas"?"Fijos":x.cat:(x.cat||"Otros");
     if(isPay(x)||isCard(x))r.tar+=v;
     if(isPay(x));else if(FIJ.includes(x.cat))r.fij+=v;else r.var+=v;
     r.cat[c]=(r.cat[c]||0)+v;(r.items[c]=r.items[c]||[]).push({...x,v})});
