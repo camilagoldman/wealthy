@@ -363,7 +363,7 @@ async function marketUpdate(){
 }
 $("bkExp").addEventListener("click",()=>{const data={app:"wealthy",v:1,exportado:new Date().toISOString(),docs:LocalDB.dump()};const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(data)],{type:"application/json"}));a.download="wealthy-"+today()+".json";document.body.appendChild(a);a.click();a.remove();try{localStorage.setItem("wealthy-bk",String(Date.now()))}catch(e){}bkInfo()});
 $("bkImp").addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;try{const n=await applyCode(await decodeCode(await f.text()));toast("Copia importada: "+n+" datos");bkInfo()}catch(err){toast("Ese archivo no es una copia de Wealthy")}e.target.value=""});
-async function decodeCode(t){t=String(t||"").trim();
+async function decodeCode(t){t=String(t||"").normalize("NFKC");const z=t.indexOf("WEALTHYZ:"),w=t.indexOf("WEALTHY:");if(z>=0)t="WEALTHYZ:"+t.slice(z+9).replace(/[^A-Za-z0-9+/=]/g,"");else if(w>=0)t="WEALTHY:"+t.slice(w+8).replace(/[^A-Za-z0-9+/=]/g,"");else t=t.trim();
   if(t.startsWith("WEALTHYZ:")){const b=atob(t.slice(9).replace(/\s+/g,""));const u=new Uint8Array([...b].map(c=>c.charCodeAt(0)));const st=new Blob([u]).stream().pipeThrough(new DecompressionStream("gzip"));return JSON.parse(await new Response(st).text())}
   if(t.startsWith("WEALTHY:")){const b=atob(t.slice(8).replace(/\s+/g,""));const u=new Uint8Array([...b].map(c=>c.charCodeAt(0)));t=new TextDecoder().decode(u)}return JSON.parse(t)}
 async function applyCode(d){
@@ -373,6 +373,8 @@ async function applyCode(d){
     if(o.op==="delete")await r.delete();else if(o.op==="merge"){const g=await r.get();if(g.exists)await r.update(o.data||{});else await r.set(o.data||{})}else await r.set(o.data||{});n++}
   return n}
 $("codeOk").addEventListener("click",async()=>{try{const n=await applyCode(await decodeCode($("code").value));$("code").value="";toast(`Listo: ${n} cambio${n===1?"":"s"} cargado${n===1?"":"s"}`);bkInfo()}catch(e){toast("Ese código no es válido, copialo completo")}});
+async function hashImport(){const h=decodeURIComponent(location.hash||"");const i=h.indexOf("WEALTHY");if(i<0)return;history.replaceState(null,"",location.pathname);try{const n=await applyCode(await decodeCode(h.slice(i)));toast(`Listo: ${n} cambio${n===1?"":"s"} cargado${n===1?"":"s"}`);bkInfo()}catch(e){toast("No pude leer el link, pedile a Claude otro")}}
+setTimeout(hashImport,600);window.addEventListener("hashchange",hashImport);
 function bkInfo(){let t=0;try{t=+localStorage.getItem("wealthy-bk")||0}catch(e){}$("bkInfo").textContent=`${LocalDB.count()} datos guardados en este celular.`+(t?` Última copia: ${new Date(t).toLocaleDateString("es-AR")}.`:" Todavía no hiciste ninguna copia.")}
 
 /* ---------- plan: flujos e inversiones ---------- */
